@@ -1,81 +1,264 @@
 blueprint:
-  name: Sonoff SNZB-01P Zigbee Wireless Switch - Zigbee2MQTT
-  description: Setup actions for three functions of the SONOFF Zigbee button with Press, Double Press, and Hold.
+  name: Z2M 2.0 - IKEA five button remote for lights
+  description: 'Control lights with an IKEA five button remote (the round ones).
+
+
+    The middle "on" button, toggle the lights on/off to the last set brightness
+
+    (unless the force brightness is toggled on in the blueprint).
+
+
+    Dim up/down buttons will change the brightness smoothly and can be pressed
+
+    and hold until the brightness is satisfactory.
+
+
+    The "left" and "right" buttons can be assigned to a short and long button
+
+    press action. This allows you to assign, e.g., a scene or anything else.
+
+
+    This is a fork of @Frenck''s blueprint for ZHA found here https://community.home-assistant.io/t/zha-ikea-five-button-remote-for-lights/253804
+
+    '
   domain: automation
   input:
-    button_id:
-      name: Sonoff SNZB-01P Zigbee Wireless Switch
-      description: Sonoff SNZB-01P Zigbee Wireless Switch to use
+    remote:
+      name: Remote
+      description: IKEA remote to use
       selector:
-        entity:
+        device:
           integration: mqtt
-          domain: event
-    mode:
-      name: Automation mode
-      description: The automation’s mode configuration option controls what happens when the automation is triggered while the actions
-        are still running from a previous trigger (see [Automation modes](https://www.home-assistant.io/docs/automation/modes/)).
-      default: single
+          manufacturer: SONOFF
+          # model: TRADFRI remote control (E1524/E1810)
+    light:
+      name: Light(s)
+      description: The light(s) to control
       selector:
-        select:
-          options:
-            - single
-            - restart
-            - queued
-            - parallel
-    press_action:
-      name: Press Action
-      description: Action to perform on single Press
+        target:
+          entity:
+            domain: light
+    force_brightness:
+      name: Force turn on brightness
+      description: 'Force the brightness to the set level below, when the "on" button
+        on the remote is pushed and lights turn on.
+
+        '
+      default: false
+      selector:
+        boolean: {}
+    brightness:
+      name: Brightness
+      description: Brightness of the light(s) when turning on
+      default: 50
+      selector:
+        number:
+          min: 0.0
+          max: 100.0
+          mode: slider
+          step: 1.0
+          unit_of_measurement: '%'
+    button_long_max_loop_repeats:
+      name: (Optional) Button long press - Maximum loop repeats
+      description: >-
+        Maximum number of repeats for the custom action, when looping is enabled.
+        Use it as a safety limit to prevent an endless loop in case the corresponding stop event is not received.
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 5000
+          mode: slider
+          step: 1
+    button_left_short:
+      name: Left button - short press
+      description: Action to run on short left button press
       default: []
       selector:
         action: {}
-    double_press_action:
-      name: Double Press Action
-      description: Action to perform on Double Press
+    button_left_long:
+      name: Left button - long press
+      description: Action to run on long left button press
       default: []
       selector:
         action: {}
-    hold_action:
-      name: Hold Action
-      description: Action to perform on Hold (4 seconds)
+    button_right_short:
+      name: Right button - short press
+      description: Action to run on short right button press
       default: []
       selector:
         action: {}
-  source_url: https://github.com/petr-stupka/ha-blueprints/blob/main/blueprints/sonoff/sonoff_snzb01p_wireless_switch_z2m.yaml
-variables:
-  button_id: !input 'button_id'
-  press_action: !input 'press_action'
-  double_press_action: !input 'double_press_action'
-  hold_action: !input 'hold_action'
-  mode: !input 'mode'
-mode: !input 'mode'
+    button_right_long:
+      name: Right button - long press
+      description: Action to run on long right button press
+      default: []
+      selector:
+        action: {}
+    brightness_up_release:
+      name: Up Release
+      description: Action to run on up release - leave this blank for default "stop brightness move" action
+      default: []
+      selector:
+        action: {}
+    brightness_down_release:
+      name: Down Release
+      description: Action to run on down release - leave this blank for default "stop brightness move" action
+      default: []
+      selector:
+        action: {}
+  source_url: https://community.home-assistant.io/t/zigbee2mqtt-ikea-five-button-remote/255308
+mode: restart
 max_exceeded: silent
+variables:
+  force_brightness: !input 'force_brightness'
 trigger:
-- platform: event
-  event_type: zha_event
-  event_data:
-    device_id: !input 'button_id'
-    command: "toggle"
-- platform: event
-  event_type: zha_event
-  event_data:
-    device_id: !input 'button_id'
-    command: "on"
-- platform: event
-  event_type: zha_event
-  event_data:
-    device_id: !input 'button_id'
-    command: "off"
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: toggle
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: brightness_down_hold
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: brightness_down_release
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: brightness_down_click
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: arrow_left_hold
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: arrow_left_release
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: arrow_left_click
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: toggle_hold
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: brightness_up_hold
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: brightness_up_release
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: brightness_up_click
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: arrow_right_click
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: arrow_right_hold
+    trigger: device
+  - domain: mqtt
+    device_id: !input remote
+    type: action
+    subtype: arrow_right_release
+    trigger: device
+
 action:
+- variables:
+    command: "{{ trigger.payload }}"
+    button_long_max_loop_repeats: !input button_long_max_loop_repeats
 - choose:
   - conditions:
-    - condition: template
-      value_template: '{{ trigger.event.data.command == "toggle" }}'
-    sequence: !input 'press_action'
+    - '{{ command == ''toggle'' }}'
+    sequence:
+    - choose:
+      - conditions: '{{ force_brightness }}'
+        sequence:
+        - service: light.toggle
+          target: !input 'light'
+          data:
+            transition: 1
+            brightness_pct: !input 'brightness'
+      default:
+      - service: light.toggle
+        target: !input 'light'
+        data:
+          transition: 1
   - conditions:
-    - condition: template
-      value_template: '{{ trigger.event.data.command == "on" }}'
-    sequence: !input 'double_press_action'
+    - '{{ command == ''brightness_up_click'' }}'
+    sequence:
+    - service: light.turn_on
+      target: !input 'light'
+      data:
+        brightness_step_pct: 10
+        transition: 1
   - conditions:
-    - condition: template
-      value_template: '{{ trigger.event.data.command == "off" }}'
-    sequence: !input 'hold_action'
+    - '{{ command == ''brightness_up_hold'' }}'
+    sequence:
+     - repeat:
+        while: '{{ repeat.index < button_long_max_loop_repeats | int }}'
+        sequence: 
+        - service: light.turn_on
+          data:
+            brightness_step_pct: 10
+            transition: 1
+          target: !input 'light'
+        - delay: '1'
+  - conditions:
+    - '{{ command == ''brightness_up_release'' }}'
+    sequence: !input 'brightness_up_release'
+  - conditions:
+    - '{{ command == ''brightness_down_click'' }}'
+    sequence:
+    - service: light.turn_on
+      target: !input 'light'
+      data:
+        brightness_step_pct: -10
+        transition: 1
+  - conditions:
+    - '{{ command == ''brightness_down_hold'' }}'
+    sequence:
+     - repeat:
+        while: '{{ repeat.index < button_long_max_loop_repeats | int }}'
+        sequence: 
+        - service: light.turn_on
+          data:
+            brightness_step_pct: -10
+            transition: 1
+          target: !input 'light'
+        - delay: '1'
+  - conditions:
+    - '{{ command == ''brightness_down_release'' }}'
+    sequence: !input 'brightness_down_release'
+  - conditions:
+    - '{{ command == ''arrow_left_click'' }}'
+    sequence: !input 'button_left_short'
+  - conditions:
+    - '{{ command == ''arrow_left_hold'' }}'
+    sequence: !input 'button_left_long'
+  - conditions:
+    - '{{ command == ''arrow_right_click'' }}'
+    sequence: !input 'button_right_short'
+  - conditions:
+    - '{{ command == ''arrow_right_hold'' }}'
+    sequence: !input 'button_right_long'
