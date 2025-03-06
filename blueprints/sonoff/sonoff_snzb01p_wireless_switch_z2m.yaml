@@ -7,11 +7,9 @@ blueprint:
       name: Sonoff SNZB-01P Zigbee Wireless Switch
       description: Sonoff SNZB-01P Zigbee Wireless Switch to use
       selector:
-        device:
-          filter:
-          - manufacturer: Zigbee2MQTT
-            model: bridge
-          multiple: false
+        entity:
+          integration: mqtt
+          domain: sensor
     mode:
       name: Automation mode
       description: The automation’s mode configuration option controls what happens when the automation is triggered while the actions
