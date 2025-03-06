@@ -1,8 +1,15 @@
 blueprint:
-  name: Z2M 2.0 - SONOFF
-  description: Control
+  name: Z2M 2.0 - SONOFF SNZB-01 Zigbee Wireless Switch
+  # description: Control
   domain: automation
   input:
+    switch:
+      name: Sonoff SNZB-01 Zigbee Wireless Switch
+      description: Sonoff SNZB-01 Zigbee Wireless Switch to use
+      selector:
+        device:
+          integration: mqtt
+          manufacturer: SONOFF
     remote:
       name: Remote
       description: IKEA remote to use
