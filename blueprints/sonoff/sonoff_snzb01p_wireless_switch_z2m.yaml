@@ -11,7 +11,6 @@ blueprint:
           integration: mqtt
           manufacturer: SONOFF
           model: SNZB-01P
-          # model: TRADFRI remote control (E1524/E1810)
     single_press:
       name: Single Press
       description: Action to run on single press
