@@ -3,16 +3,9 @@ blueprint:
   # description: Control
   domain: automation
   input:
-    switch:
+    event:
       name: Sonoff SNZB-01 Zigbee Wireless Switch
       description: Sonoff SNZB-01 Zigbee Wireless Switch to use
-      selector:
-        device:
-          integration: mqtt
-          manufacturer: SONOFF
-    remote:
-      name: Remote
-      description: IKEA remote to use
       selector:
         device:
           integration: mqtt
