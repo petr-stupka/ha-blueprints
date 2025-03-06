@@ -9,7 +9,7 @@ blueprint:
       selector:
         entity:
           integration: mqtt
-          domain: switch
+          domain: event
     mode:
       name: Automation mode
       description: The automation’s mode configuration option controls what happens when the automation is triggered while the actions
