@@ -3,7 +3,7 @@ blueprint:
   # description: Control
   domain: automation
   input:
-    event:
+    switch:
       name: Sonoff SNZB-01 Zigbee Wireless Switch
       description: Sonoff SNZB-01 Zigbee Wireless Switch to use
       selector:
