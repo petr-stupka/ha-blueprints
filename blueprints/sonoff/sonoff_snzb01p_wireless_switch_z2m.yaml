@@ -10,7 +10,6 @@ blueprint:
         entity:
           integration: mqtt
           manufacturer: SONOFF
-          model: SNZB-01P
     single_press:
       name: Single Press
       description: Action to run on single press
