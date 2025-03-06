@@ -1,0 +1,83 @@
+blueprint:
+  name: Sonoff SNZB-01P Zigbee Wireless Switch - Zigbee2MQTT
+  description: Setup actions for three functions of the SONOFF Zigbee button with Press, Double Press, and Hold.
+  domain: automation
+  input:
+    button_id:
+      name: Sonoff SNZB-01P Zigbee Wireless Switch
+      description: Sonoff SNZB-01P Zigbee Wireless Switch to use
+      selector:
+        device:
+          filter:
+          - manufacturer: Zigbee2MQTT
+            model: bridge
+          multiple: false
+    mode:
+      name: Automation mode
+      description: The automation’s mode configuration option controls what happens when the automation is triggered while the actions
+        are still running from a previous trigger (see [Automation modes](https://www.home-assistant.io/docs/automation/modes/)).
+      default: single
+      selector:
+        select:
+          options:
+            - single
+            - restart
+            - queued
+            - parallel
+    press_action:
+      name: Press Action
+      description: Action to perform on single Press
+      default: []
+      selector:
+        action: {}
+    double_press_action:
+      name: Double Press Action
+      description: Action to perform on Double Press
+      default: []
+      selector:
+        action: {}
+    hold_action:
+      name: Hold Action
+      description: Action to perform on Hold (4 seconds)
+      default: []
+      selector:
+        action: {}
+  source_url: https://github.com/petr-stupka/ha-blueprints/blob/main/blueprints/sonoff/sonoff_snzb01p_wireless_switch_z2m.yaml
+variables:
+  button_id: !input 'button_id'
+  press_action: !input 'press_action'
+  double_press_action: !input 'double_press_action'
+  hold_action: !input 'hold_action'
+  mode: !input 'mode'
+mode: !input 'mode'
+max_exceeded: silent
+trigger:
+- platform: event
+  event_type: zha_event
+  event_data:
+    device_id: !input 'button_id'
+    command: "toggle"
+- platform: event
+  event_type: zha_event
+  event_data:
+    device_id: !input 'button_id'
+    command: "on"
+- platform: event
+  event_type: zha_event
+  event_data:
+    device_id: !input 'button_id'
+    command: "off"
+action:
+- choose:
+  - conditions:
+    - condition: template
+      value_template: '{{ trigger.event.data.command == "toggle" }}'
+    sequence: !input 'press_action'
+  - conditions:
+    - condition: template
+      value_template: '{{ trigger.event.data.command == "on" }}'
+    sequence: !input 'double_press_action'
+  - conditions:
+    - condition: template
+      value_template: '{{ trigger.event.data.command == "off" }}'
+    sequence: !input 'hold_action'
